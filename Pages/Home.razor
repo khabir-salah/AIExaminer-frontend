@@ -1,133 +1,314 @@
-﻿@page "/"
+﻿
+@page "/"
 @inject NavigationManager navigationManager
-@inject CustomStateProvider authStateProvider
-@using Gateway.Client.Services.Authentication
-@using Gateway.Models.Authentication
+@inject IAuthentication _auth
 
-<section class="vh-100" style="background-color: #eee;">
-    <div class="container h-100">
-        <div class="row d-flex justify-content-center align-items-center h-100">
-            <div class="col-lg-12 col-xl-11">
-                <div class="card text-black" style="border-radius: 25px;">
-                    <div class="card-body p-md-5">
-                        <div class="row justify-content-center">
-                            <div class="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
+@using Gateway.Models.Authentication 
+@using Gateway.Services.Authentication
 
-                                <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Sign up</p>
+ <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
 
-                                <div class="text-center mb-3">
-                                    <p>Sign in with:</p>
-                                    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-                                        <i class="fab fa-facebook-f"></i>
-                                    </button>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: white;
+        }
 
-                                    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-                                        <i class="fab fa-google"></i>
-                                    </button>
+        .container {
+            width: 400px;
+            background-color: white;
+            padding: 20px;
+        }
 
-                                    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-                                        <i class="fab fa-twitter"></i>
-                                    </button>
+        .tab-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
 
-                                    <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-                                        <i class="fab fa-github"></i>
-                                    </button>
-                                </div>
+        .tab-buttons button {
+            width: 48%;
+            padding: 12px;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 10px;
+        }
 
+        .tab-buttons button.active {
+            background-color: #d7e4f5;
+            color: #1665c1;
+        }
 
+        .tab-buttons button.inactive {
+            background-color: #f0f0f0;
+        }
 
-                                <EditForm OnValidSubmit="OnSubmit" Model="@request" class="mx-1 mx-md-4" FormName="home">
-                                    <DataAnnotationsValidator />
+        form {
+            display: none;
+        }
 
-                                    <div class="d-flex flex-row align-items-center mb-4">
-                                        <i class="fas fa-user fa-lg me-3 fa-fw"></i>
-                                        <div data-mdb-input-init class="form-outline flex-fill mb-0">
-                                            <input type="text" id="FirstName" class="form-control" @bind-value="@request.FirstName" />
-                                            <label class="form-label" for="FirstName">Your First Name</label>
-                                            <ValidationMessage For="@(() => request.FirstName)" />
-                                        </div>
-                                    </div>
+        form.active {
+            display: block;
+        }
 
-                                    <div class="d-flex flex-row align-items-center mb-4">
-                                        <i class="fas fa-user fa-lg me-3 fa-fw"></i>
-                                        <div data-mdb-input-init class="form-outline flex-fill mb-0">
-                                            <input type="text" id="LastName" class="form-control" @bind-value="@request.LastName" />
-                                            <label class="form-label" for="LastName">Your Last Name</label>
-                                            <ValidationMessage For="@(() => request.LastName)" />
-                                        </div>
-                                    </div>
+        .social-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
 
-                                    <div class="d-flex flex-row align-items-center mb-4">
-                                        <i class="fas fa-envelope fa-lg me-3 fa-fw"></i>
-                                        <div data-mdb-input-init class="form-outline flex-fill mb-0">
-                                            <input type="email" id="Email" class="form-control" @bind-value="@request.Email" />
-                                            <label class="form-label" for="Email">Your Email</label>
-                                            <ValidationMessage For="@(() => request.LastName)" />
-                                        </div>
-                                    </div>
+        .social-buttons a {
+            text-decoration: none;
+            padding: 10px;
+            margin: 0 5px;
+            background-color: #f0f0f0;
+            border-radius: 50%;
+            font-size: 18px;
+        }
 
-                                    <div class="d-flex flex-row align-items-center mb-4">
-                                        <i class="fas fa-lock fa-lg me-3 fa-fw"></i>
-                                        <div data-mdb-input-init class="form-outline flex-fill mb-0">
-                                            <input type="password" id="Password" class="form-control" @bind-value="@request.Password" />
-                                            <label class="form-label" for="Password">Password</label>
-                                            <ValidationMessage For="@(() => request.Password)" />
-                                        </div>
-                                    </div>
+        .input-group {
+            margin-bottom: 15px;
+        }
 
-                                     <div class="d-flex flex-row align-items-center mb-4">
-                                        <i class="fas fa-key fa-lg me-3 fa-fw"></i>
-                                        <div data-mdb-input-init class="form-outline flex-fill mb-0">
-                                            <input type="password" id="RepeatPassword" class="form-control" @bind-value="@request.RepeatPassword" />
-                                            <label class="form-label" for="RepeatPassword">Repeat your password</label>
-                                            <ValidationMessage For="@(() => request.RepeatPassword)" />
-                                        </div>
-                                    </div> 
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
 
-                                    <div class="d-flex justify-content-between mx-4 mb-3 mb-lg-4">
-                                        <button type="submit" class="btn btn-primary btn-lg" data-mdb-ripple="true">Register</button> 
-                                    </div>
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
 
-                                    <label class="text-danger">@error</label>
-                                    <NavLink href="login">
-                                        <h6 class="font-weight-normal text-center">Already have an account? Click here to login</h6>
-                                    </NavLink>
+        .form-options {
+            display: flex;
+            justify-content: center;
+            gap: 95px;
+            margin-bottom: 20px;
+        }
 
-                                </EditForm>
+        .form-options label {
+            display: flex;
+            justify-content: center;
+            font-size: 12px;
+            gap: 6px;
+        }
 
-                            </div>
-                            <div class="col-md-10 col-lg-6 col-xl-7 d-flex align-items-center order-1 order-lg-2">
+        .form-options a {
+            display: flex;
+            justify-content: center;
+            font-size: 12px;
+            text-decoration: none;
+        }
 
-                                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-registration/draw1.webp"
-                                     class="img-fluid" alt="Sample image">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        .submit-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-btn:hover {
+            background-color: #1665c1;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .submit-btn:active {
+            background-color: #0e4a8e;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            transform: translateY(2px);
+        }
+
+        .terms {
+            display: flex;
+            font-size: 12px;
+            margin: 10px;
+            justify-content: center;
+            gap: 7px;
+        }
+
+        .text-center {
+            text-align: center;
+            margin: 15px;
+        }
+
+        .text-center a, p {
+            font-size: 12px;
+            text-decoration: none;
+            color: #1a73e8;
+        }
+        .text-center p {
+            font-size: 12px;
+            text-decoration: none;
+            color: black;
+        }
+        .text-center.mb-3 {
+            font-size: 12px;
+            text-decoration: none;
+            color: black;
+        }
+        div {
+            font-size: 12px;
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+    @if (showError)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Error!</strong> @error
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+    }
+
+    <div class="container">
+        <div class="tab-buttons">
+            <button id="login-btn" class="@(isLoginActive ? "active" : "inactive")" @onclick="ShowLogin">LOGIN</button>
+            <button id="register-btn" class="@(isLoginActive ? "inactive" : "active")" @onclick="ShowRegister">REGISTER</button>
+        </div>
+
+        @if (isLoginActive)
+        {
+            <p class="text-center mb-3">Sign in with:</p>
+        <EditForm OnValidSubmit="OnsubmitLogin" Model="@LoginRequest" id="login-form" class="active">
+                <div class="social-buttons">
+                    <button type="button" class="btn btn-link btn-floating mx-1">
+                        <i class="fab fa-facebook-f"></i>
+                    </button>
+                    <button type="button" class="btn btn-link btn-floating mx-1">
+                        <i class="fab fa-google"></i>
+                    </button>
+                    <button type="button" class="btn btn-link btn-floating mx-1">
+                        <i class="fab fa-twitter"></i>
+                    </button>
+                    <button type="button" class="btn btn-link btn-floating mx-1">
+                        <i class="fab fa-github"></i>
+                    </button>
+                </div>
+                <div class="input-group">
+                <input type="text" id="login-email" placeholder="Email" @bind-value="@LoginRequest.Email">
+                </div>
+                <div class="input-group">
+                <input type="password" id="login-password" placeholder="Password" @bind-value="@LoginRequest.Password">
+                </div>
+                <div class="form-options">
+                    <label><input type="checkbox" checked> Remember me</label>
+                    <a href="#">Forgot password?</a>
+                </div>
+                <button type="submit" class="submit-btn">Sign in</button>
+         </EditForm>
+        }
+        else
+        {
+        <EditForm OnValidSubmit="OnSubmit" Model="@request" FormName="home" id="register-form" class="active">
+            <DataAnnotationsValidator />
+                <p class="text-center mb-3">Sign Up with:</p>
+                <div class="social-buttons">
+                    <button type="button" class="btn btn-link btn-floating mx-1">
+                        <i class="fab fa-facebook-f"></i>
+                    </button>
+                    <button type="button" class="btn btn-link btn-floating mx-1">
+                        <i class="fab fa-google"></i>
+                    </button>
+                    <button type="button" class="btn btn-link btn-floating mx-1">
+                        <i class="fab fa-twitter"></i>
+                    </button>
+                    <button type="button" class="btn btn-link btn-floating mx-1">
+                        <i class="fab fa-github"></i>
+                    </button>
+                </div>
+                <div class="input-group">
+                <input type="text" id="register-name" placeholder="First Name" @bind-value="@request.FirstName">
+                <ValidationMessage For="@(() => request.FirstName)" />
+                </div>
+                <div class="input-group">
+                <input type="text" id="register-username" placeholder="Last Name" @bind-value="@request.LastName">
+                <ValidationMessage For="@(() => request.LastName)" />
+                </div>
+                <div class="input-group">
+                <input type="email" id="register-email" placeholder="Email" @bind-value="@request.Email">
+                <ValidationMessage For="@(() => request.Email)" />
+                </div>
+                <div class="input-group">
+                <input type="password" id="register-password" placeholder="Password" @bind-value="@request.Password">
+                <ValidationMessage For="@(() => request.Password)" />
+                </div>
+                <div class="input-group">
+                <input type="password" id="register-repeat-password" placeholder="Repeat password" @bind-value="@request.RepeatPassword">
+                <ValidationMessage For="@(() => request.RepeatPassword)" />
+                </div>
+                <div class="form-options">
+                    <label><input type="checkbox" checked> I have read and agree to the terms</label>
+                </div>
+                <button type="submit" class="submit-btn">Sign up</button>
+            </EditForm>
+        }
     </div>
-</section> 
-
-
 
 
 @code {
-  
+
     ViewRegisterModel request { get; set; } = new ViewRegisterModel();
-    string error { get; set; }
+    string error;
+    LoginRequestModel LoginRequest { get; set; } = new LoginRequestModel();
+    private bool isLoginActive = true;
+    bool showError = false;
 
     async Task OnSubmit()
     {
         error = string.Empty;
         try
         {
-            await authStateProvider.Register(request);
-            navigationManager.NavigateTo("");
+            await _auth.Register(request);
+            navigationManager.NavigateTo("/");
         }
         catch (Exception ex)
         {
             error = ex.Message;
+            showError = true;
         }
+    }
+
+    async Task OnsubmitLogin()
+    {
+        
+        error = string.Empty;
+        try
+        {
+            await _auth.Login(LoginRequest);
+            navigationManager.NavigateTo("/UserDashboard");
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+            showError = true;
+        }
+    }
+
+    private void ShowLogin()
+    {
+        isLoginActive = true;
+    }
+
+    private void ShowRegister()
+    {
+        isLoginActive = false;
     }
 }
