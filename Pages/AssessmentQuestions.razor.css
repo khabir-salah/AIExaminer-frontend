@@ -1,0 +1,14 @@
+﻿.assessment-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.question-wrapper {
+    padding: 1.5rem;
+    border-bottom: 1px solid #ddd;
+}
+
+.options-wrapper .form-check {
+    margin-bottom: 10px;
+}
+
