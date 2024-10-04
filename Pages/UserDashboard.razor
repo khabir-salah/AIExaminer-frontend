@@ -1,209 +1,21 @@
 ﻿@page "/UserDashboard"
-@layout NavMenu
-
-<style>
-
-     .form-control {
-        width: 100%; /* Ensures the select box fits the container */
-        padding: 10px; /* Optional: Adjust padding for better appearance */
-        font-size: 16px;
-    }
-
-    .custom-select-wrapper {
-        width: 100%; /* Make sure the wrapper also takes full width */
-    }
+@layout UserLayout  
+@using Gateway.ClientAI.Services.Authentication
+@using Microsoft.AspNetCore.Components.Authorization;
+@using static Gateway.ClientAI.Models.QuestionGeneration.GenerateTextViewModel
+@inject CustomAuthenticationStateProvider AuthenticationStateProvider
+@inject IAssessment _assessment
+@using Gateway.ClientAI.Services.QuestionGeneration
+@using System.Net.Http.Headers
+@using static Gateway.ClientAI.Models.QuestionGeneration.QuestionViewModel
+@inject HttpClient _httpClient
+@inject IJSRuntime _jsRuntime
 
 
-    .form-container {
-        display: flex;
-        flex-direction: column;
-        gap: 28px;
-        margin: 0 auto;
-        width: 100%;
-        max-width: 650px;
-        padding-top: 8px;
-        padding-bottom: 40px;
-        align-content: center;
-        padding: 8px 0x 40px;
-    }
 
-    .card.p-3.form-container {
-        display: flex;
-        flex-direction: column;
-        gap: 28px;
-        margin: 0 auto;
-        width: 100%;
-        max-width: 800px;
-        padding-top: 8px;
-        padding-bottom: 40px;
-        align-content: center;
-        padding: 8px 0x 40px;
-    }
 
-    .form-input
-    {
-        display: flex;
-        flex-direction: column;
-    }
-    .form-group
-    {
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-    .upload-area {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%; 
-        text-align: center;
-    }
 
-    svg.cent {
-        margin-bottom: 20px; /* Optional spacing between the icon and the button below */
-    }
-
-    .lower-edge {
-        margin-top: 20px;
-    }
-
-   
-    .tooltip::after {
-        content: attr(data-tooltip-content);
-        position: absolute;
-        bottom: 125%; 
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: #333;
-        color: #fff;
-        padding: 5px;
-        border-radius: 4px;
-        white-space: nowrap;
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.3s;
-        font-size: 12px;
-        pointer-events: none;
-    }
-
-    .tooltip:hover::after {
-        opacity: 1;
-        visibility: visible;
-    }
-    .tooltip {
-        position: relative;
-        display: inline-block;
-    }
-    .file-requirements {
-        color: #718096;
-        margin-top: 1rem;
-        text-align: center;
-        font-size: 12px;
-        font-style: italic;
-    }
-
-        .file-requirements span {
-            font-weight: bold;
-        }
-
-    .upload-button {
-        width: 351.17px;
-        height: 54px;
-        border: 1px solid #000;
-        border-color: #2F004F;
-        background-color: white;
-        color: #000;
-        font-size: 16px;
-        font-family: 'Inter', sans-serif;
-        border-radius: 4px;
-        padding: 0;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-        .upload-button.outlined {
-            border: 2px solid #2F004F;
-            background-color: transparent;
-        }
-
-        .upload-button.large {
-            font-size: 18px;
-        }
-        .btn
-        {
-            border: 2px solid #2c0e4f;
-            background-color: #2c0e4f;
-            color: white;
-        }
-
-    .btn:hover {
-        border: 2px solid #2c0e4f;
-        background-color: #2c0e4f;
-        color: white;
-    }
-
-    .lower-edge {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 12px;
-        width: 351.17px;
-        height: 82px;
-    }
-    .file-upload-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 1.5rem;
-        background-color: #f7fafc;
-        border: 2px solid #cbd5e0;
-        border-radius: 0.75rem;
-    }
-
-    .container.mt-5
-    {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    .tab-buttons {
-        display: flex;
-        align-content: center;
-        margin-bottom: 20px;
-        gap: 20px;
-        width: 100%;
-        max-width: 800px;
-    }
-    .cent{
-        justify-content: center;
-    }
-    
-
-        .tab-buttons button {
-            width: 40%;
-            padding: 12px;
-            border: none;
-            border-radius: 2px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: bold
-        }
-
-            .tab-buttons button.active {
-                background-color: #dac7ff;
-                color: #2c0e4f;
-            }
-
-            .tab-buttons button.inactive {
-                background-color: #f0f0f0;
-            }
-
-</style>
-<div class="container mt-5">
-    <h2 class="text-center mb-4">AIExaminer - Generate Questions</h2>
+<div class="container ">
 
     <div class="tab-buttons">
         <button class="@(activeTab == "Text" ? "active" : "")" @onclick="ShowTextInput">Type Text</button>
@@ -213,15 +25,23 @@
 
     @if (activeTab == "Text")
     {
-        <div class="card p-3 form-container">
-            <h5>Type Text to Generate Questions</h5>
-            <div class="form-group mb-3">
-                <label for="typed-text">Text Input</label>
-                <textarea id="typed-text" class="form-control" rows="5" placeholder="Enter the text here"></textarea>
+        <EditForm Model="@textRequest" OnValidSubmit="SubmitText">
+            <DataAnnotationsValidator />
+            <div class="card p-3 form-container">
+                <div class="form-group">
+                    <b>Title</b>
+                    <input type="text"  placeholder="Give your Text A Title" @bind="@textRequest.Title">
+                    <ValidationMessage For="@(() => textRequest.Title)" />
+                </div>
+                <h5>Type Text to Generate Questions</h5>
+                <div class="form-group mb-1">
+                    <b><label for="typed-text">Text Input</label></b>
+                    <textarea id="typed-text" class="form-control" rows="6" placeholder="Enter the text here" @bind="@textRequest.Content"></textarea>
+                </div>
+                @RenderQuestionSettings() 
+                <button class="btn" type="submit">Generate Questions</button>
             </div>
-            @RenderQuestionSettings()
-            <button class="btn">Generate Questions</button>
-        </div>
+        </EditForm>
     }
     else if (activeTab == "Document")
     {
@@ -258,7 +78,7 @@
                 </div>
 
             </div>
-            @RenderQuestionSettings()
+            @RenderQuestionSettings() 
             <button class="btn">Generate Questions</button>
         </div>
        
@@ -303,7 +123,98 @@
 </div>
 
 @code {
+    private TextModel textRequest;
+    private AssessmentResponse assessmentViewModel;
+    private AssessmentService AssessmentService { get; set; }
+    private AuthenticationState _authState;
     private string activeTab = "Text";
+    Choice Choice = new Choice();
+
+    private string userRole;
+
+    protected override async Task OnInitializedAsync()
+    {
+        textRequest = new TextModel
+        {
+            Choice = new Choice() 
+        };
+
+        _authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = _authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            var roleClaim = user.FindFirst(c => c.Type == "role");
+            if (roleClaim != null)
+            {
+                userRole = roleClaim.Value;
+            }
+        }
+        else
+        {
+            navigationManager.NavigateTo("/UserDashboard");
+        }
+    }
+
+    private RenderFragment RenderQuestionSettings() => @<div class="form-input">
+        @if (textRequest?.Choice != null)
+    {
+        <div class="form-group">
+            <label for="question-type">
+                <b>Question Type</b>
+                <p class="info tooltip" data-tooltip-content="Choose the type of questions you would like to generate">i</p>
+            </label>
+            <div class="custom-select-wrapper">
+                <select id="question-type" class="form-control" @bind="@textRequest.Choice.Type">
+                    <option value="0">Select Question Type</option>
+                    <option value="@QuestionType.MultipleChoice">Multiple Choice</option>
+                    <option value="@QuestionType.TrueOrFalse">True or False</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="question-count">
+                <b>Number of Questions</b>
+                <p class="info tooltip" data-tooltip-content="Number of questions you can generate depend on your Subscription">i</p>
+            </label>
+            <div class="custom-select-wrapper">
+                <select id="question-count" class="form-control" @bind="@textRequest.Choice.NumberOfQuestion">
+                    @if (userRole == "Basic")
+                {
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="0">Subscribe to get more options</option>
+                }
+                else if (userRole == "Classic")
+                {
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option>Subscribe to get more options</option>
+                }
+                else if (userRole == "Standard")
+                {
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                }
+                else
+                {
+                    <p>Not Authorized</p>
+                }
+                </select>
+            </div>
+        </div>
+    }
+    else
+    {
+        <p>Error: Choice is not initialized</p>
+    }
+    </div>;
+
+
 
     private void ShowTextInput()
     {
@@ -320,37 +231,20 @@
         activeTab = "Picture";
     }
 
-    private RenderFragment RenderQuestionSettings() =>@<div class="form-input">
-        <div class="form-group">
-            <label for="question-type">
-                <b>Question Type</b>
-                <p class="info tooltip"
-                   data-tooltip-content="Choose the type of questions you would like to generate">i</p>
-            </label>
-            <div class="custom-select-wrapper">
-                <select id="question-type" class="form-control">
-                    <option value="1">Multiple Choice</option>
-                    <option value="2">True or False</option>
-                </select>
-            </div>
-        </div>
+    async Task SubmitText()
+    {
+        try
+        {
+            assessmentViewModel = await _assessment.TextGeneratedQuestion(textRequest);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during API call: {ex.Message}");
+        }
 
-        <div class="form-group">
-            <label for="question-count">
-                <b>Number of Questions</b>
-                <p class="info tooltip"
-                   data-tooltip-content="Number of questions you can generate depend on your Subscription">i</p>
-            </label>
-            <div class="custom-select-wrapper">
-                <select id="question-count" class="form-control">
-                    <option>5</option>
-                    <option>10</option>
-                </select>
-            </div>
-        </div>
+        AssessmentService.Assessment = assessmentViewModel;
+        navigationManager.NavigateTo("/AssessmentQuestion");
+    }
 
-    </div>;
-
-    
 } 
   
