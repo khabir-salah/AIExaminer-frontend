@@ -1,0 +1,32 @@
+﻿.modal .modal-dialog {
+    max-width: 400px;
+    margin: 1.75rem auto;
+}
+
+.modal .modal-header {
+    background-color: #007bff;
+    color: white;
+}
+
+.modal .modal-footer .btn-primary {
+    background-color: #007bff;
+}
+
+.list-group-item-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.list-group-item-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.container {
+    max-width: 800px;
+}
+
+.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+

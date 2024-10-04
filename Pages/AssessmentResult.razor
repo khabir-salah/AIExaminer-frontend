@@ -1,0 +1,93 @@
+﻿@page "/assessment-result"
+@layout UserLayout
+@using static Gateway.ClientAI.Models.QuestionGeneration.SubmitAssessmentModel
+@inject AssessmentResultResponseModel _result
+
+@if (showModal)
+{
+    <!-- Modal for score -->
+    <div class="modal fade show" style="display:block;" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Assessment Score</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <h3>Your Score: @_result.Score%</h3>
+                    <p>Do you want to try again or view your corrections?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="TryAgain">Try Again</button>
+                    <button class="btn btn-primary" @onclick="ViewCorrection">View Correction</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (showCorrections)
+{
+    <div class="container mt-5">
+        <h3>Review Your Assessment</h3>
+
+        @foreach (var question in _result.Questions)
+        {
+            <div class="card my-3">
+                <div class="card-body">
+                    <h5 class="card-title">@question.QuestionText</h5>
+
+                    <ul class="list-group">
+                        @foreach (var option in question.Options)
+                        {
+                            <li class="list-group-item 
+                                @(question.UserAnswer == option.Text ? (question.UserAnswer == question.Answer ? "list-group-item-success" : "list-group-item-danger") : "")">
+                                @option.Text
+                            </li>
+                        }
+                    </ul>
+
+                    <div class="mt-3">
+                        <strong>Correct Answer: </strong> @question.Answer
+                        <br />
+                        <strong>Explanation: </strong> @question.Explanation
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private bool showModal = true; // To control the visibility of the modal
+    // private AssessmentResultResponseModel assessmentResult = new AssessmentResultResponseModel
+    //     {
+    //         Score = 80, // Example score (this should come from your backend),
+    //         Questions = new List<QuestionResponseView>()
+    //         {
+    //             // Sample questions (you will populate this from backend)
+    //         }
+    //     };
+
+    private void CloseModal()
+    {
+        showModal = false;
+    }
+
+    private void ViewCorrection()
+    {
+        showModal = false; // Close the modal
+        showCorrections = true; // Show corrections
+    }
+
+    private bool showCorrections = false; // Control for displaying corrections
+
+    private void TryAgain()
+    {
+        // Logic to restart the assessment or load a new one
+        navigationManager.NavigateTo("/AssessmentQuestion");
+    }
+
+}
+
+
