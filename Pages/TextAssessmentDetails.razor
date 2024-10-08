@@ -1,0 +1,80 @@
+﻿@page "/TextAssessmentDetails"
+@layout UserLayout
+@using Gateway.ClientAI.Models.QuestionGeneration
+@inject NavigationManager navigationManager
+@inject IJSRuntime jsRuntime
+@inject Blazored.Toast.Services.IToastService toastService
+@inject IAssessment _assessment
+@using Gateway.ClientAI.Services.QuestionGeneration
+
+
+<h3>Your Assessments</h3>
+
+@if (assessmentDetails != null && assessmentDetails.Count > 0)
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Title</th>
+                    <th>Date Created</th>
+                    <th>Assessment Link</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var assessment in assessmentDetails)
+                {
+                    <tr>
+                        <td>@assessment.Title</td>
+                        <td>@assessment.DateCreated.ToString("dd MMM yyyy")</td>
+                        <td>
+                            <button class="btn btn-info btn-sm" @onclick="() => CopyLinkToClipboard(assessment.AssessmentLink)">
+                                Copy Link
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" @onclick="() => RetakeAssessment(assessment.Id)">
+                                Retake Assessment
+                            </button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => DeleteAssessment(assessment.Id)">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p>No assessments available.</p>
+}
+
+@code {
+    private ICollection<TextAssessmebtDetails> assessmentDetails;
+
+    protected override async Task OnInitializedAsync()
+    {
+        assessmentDetails = await _assessment.TextAssessmentDetails();
+    }
+
+    private async Task CopyLinkToClipboard(string link)
+    {
+        await jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", link);
+        toastService.ShowSuccess("Link copied to clipboard!");
+    }
+
+    private void RetakeAssessment(Guid AssessmentId)
+    {
+        // Navigate to the assessment link for retaking
+        navigationManager.NavigateTo($"RetakeAssessment/{AssessmentId}");
+    }
+
+    private void DeleteAssessment(Guid Id)
+    {
+        
+    }
+}
+

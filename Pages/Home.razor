@@ -1,7 +1,6 @@
 ﻿<body>
 
     @page "/"
-    @inject CustomAuthenticationStateProvider _auth
     @using Gateway.ClientAI.Services.Authentication
     @using Gateway.Services.Authentication
 
@@ -121,7 +120,7 @@
             error = string.Empty;
             try
             {
-                await _auth.Register(request);
+                await AuthenticationStateProvider.Register(request);
                 navigationManager.NavigateTo("/");
             }
             catch (Exception ex)
@@ -137,7 +136,7 @@
             error = string.Empty;
             try
             {
-                await _auth.Login(LoginRequest);
+                await AuthenticationStateProvider.Login(LoginRequest);
                 navigationManager.NavigateTo("/UserDashboard");
             }
             catch (Exception ex)

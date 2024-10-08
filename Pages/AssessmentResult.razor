@@ -1,6 +1,5 @@
-﻿@page "/assessment-result"
+﻿@page "/AssessmentResult"
 @layout UserLayout
-@using static Gateway.ClientAI.Models.QuestionGeneration.SubmitAssessmentModel
 @inject AssessmentResultResponseModel _result
 
 @if (showModal)
@@ -18,7 +17,7 @@
                     <p>Do you want to try again or view your corrections?</p>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="TryAgain">Try Again</button>
+                    <button class="btn btn-secondary" @onclick="() => TryAgain(_result.AssesmentId)">Try Again</button>
                     <button class="btn btn-primary" @onclick="ViewCorrection">View Correction</button>
                 </div>
             </div>
@@ -82,10 +81,10 @@
 
     private bool showCorrections = false; // Control for displaying corrections
 
-    private void TryAgain()
+    private void TryAgain(Guid AssessmentId)
     {
         // Logic to restart the assessment or load a new one
-        navigationManager.NavigateTo("/AssessmentQuestion");
+        navigationManager.NavigateTo($"/RetakeAssessment/{AssessmentId}");
     }
 
 }

@@ -1,15 +1,6 @@
 ﻿@page "/UserDashboard"
 @layout UserLayout  
-@using Gateway.ClientAI.Services.Authentication
-@using Microsoft.AspNetCore.Components.Authorization;
-@using static Gateway.ClientAI.Models.QuestionGeneration.GenerateTextViewModel
-@inject CustomAuthenticationStateProvider AuthenticationStateProvider
-@inject IAssessment _assessment
-@using Gateway.ClientAI.Services.QuestionGeneration
-@using System.Net.Http.Headers
-@using static Gateway.ClientAI.Models.QuestionGeneration.QuestionViewModel
-@inject HttpClient _httpClient
-@inject IJSRuntime _jsRuntime
+@inject IToastService toastService
 
 
 
@@ -29,14 +20,13 @@
             <DataAnnotationsValidator />
             <div class="card p-3 form-container">
                 <div class="form-group">
-                    <b>Title</b>
-                    <input type="text"  placeholder="Give your Text A Title" @bind="@textRequest.Title">
+                    <label for="titleInput"><b>Title</b></label>
+                    <input type="text" id="titleInput" class="form-control" placeholder="Give your Text A Title" @bind="@textRequest.Title" />
                     <ValidationMessage For="@(() => textRequest.Title)" />
                 </div>
-                <h5>Type Text to Generate Questions</h5>
-                <div class="form-group mb-1">
+                <div class="form-group ">
                     <b><label for="typed-text">Text Input</label></b>
-                    <textarea id="typed-text" class="form-control" rows="6" placeholder="Enter the text here" @bind="@textRequest.Content"></textarea>
+                    <textarea id="typed-text" class="form-control" rows="8" placeholder="Enter the text here" @bind="@textRequest.Content"></textarea>
                 </div>
                 @RenderQuestionSettings() 
                 <button class="btn" type="submit">Generate Questions</button>
@@ -45,41 +35,44 @@
     }
     else if (activeTab == "Document")
     {
-       
-
         <div class="form-container">
-            <div class="file-upload-container">
-                <input type="file" name="document" id="fileInput" hidden
-                       accept=".docx, .doc, .pdf, .pptx, .txt" />
+            <EditForm Model="@textRequest" OnValidSubmit="GenerateQuestions"> 
+                <DataAnnotationsValidator />
+                <div class="form-group">
+                    <label for="titleInput"><b>Title</b></label>
+                    <input type="text" id="titleInput" class="form-control" placeholder="Give your Document A Title" @bind="@textRequest.Title" />
+                    <ValidationMessage For="@(() => textRequest.Title)" />
+                </div>
+                <div class="file-upload-container">
+                    <InputFile OnChange="HandleFileUpload" class="file-input" id="fileInput" hidden />
 
-                <div class="upload-area">
-                    <svg width="80" height="80" viewBox="0 0 32 32" fill="none"
-                         xmlns="http://www.w3.org/2000/svg" class="cent">
-                        <circle cx="16" cy="16" r="16" fill="#F0F2F5"></circle>
-                        <path d="M11.9998 14.3334C11.9998 12.3083 13.6415 10.6667 15.6665 10.6667C17.4603 10.6667 18.9545 11.9555 19.2712 13.6578C19.3156 13.8965 19.4863 14.0922 19.7167 14.1687C21.0439 14.6088 21.9998 15.8603 21.9998 17.3334C21.9998 19.1743 20.5075 20.6667 18.6665 20.6667C18.2983 20.6667 17.9998 20.9652 17.9998 21.3334C17.9998 21.7016 18.2983 22 18.6665 22C21.2438 22 23.3332 19.9107 23.3332 17.3334C23.3332 15.4051 22.164 13.7514 20.4974 13.0398C19.9271 10.9054 17.981 9.33337 15.6665 9.33337C12.9051 9.33337 10.6665 11.572 10.6665 14.3334C10.6665 14.4002 10.6678 14.4668 10.6704 14.5331C9.47349 15.2236 8.6665 16.517 8.6665 18C8.6665 20.2092 10.4574 22 12.6665 22C13.0347 22 13.3332 21.7016 13.3332 21.3334C13.3332 20.9652 13.0347 20.6667 12.6665 20.6667C11.1937 20.6667 9.99984 19.4728 9.99984 18C9.99984 16.8951 10.672 15.9457 11.6323 15.5412C11.9102 15.4241 12.0749 15.1351 12.034 14.8363C12.0115 14.6722 11.9998 14.5043 11.9998 14.3334Z"
-                              fill="#475367"></path>
-                        <path d="M15.5569 17.5018C15.8095 17.2772 16.1902 17.2772 16.4427 17.5018L17.4427 18.3907C17.7179 18.6353 17.7427 19.0567 17.4981 19.3318C17.2841 19.5726 16.9348 19.6217 16.6665 19.4664V22.6667C16.6665 23.0349 16.368 23.3334 15.9998 23.3334C15.6316 23.3334 15.3332 23.0349 15.3332 22.6667V19.4664C15.0648 19.6217 14.7156 19.5726 14.5016 19.3318C14.257 19.0567 14.2817 18.6353 14.5569 18.3907L15.5569 17.5018Z"
-                              fill="#475367"></path>
-                    </svg>
+                    <div class="upload-area">
+                        <svg width="80" height="80" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="cent">
+                            <circle cx="16" cy="16" r="16" fill="#F0F2F5"></circle>
+                            <path d="M11.9998 14.3334C11.9998 12.3083 13.6415 10.6667 15.6665 10.6667C17.4603 10.6667 18.9545 11.9555 19.2712 13.6578C19.3156 13.8965 19.4863 14.0922 19.7167 14.1687C21.0439 14.6088 21.9998 15.8603 21.9998 17.3334C21.9998 19.1743 20.5075 20.6667 18.6665 20.6667C18.2983 20.6667 17.9998 20.9652 17.9998 21.3334C17.9998 21.7016 18.2983 22 18.6665 22C21.2438 22 23.3332 19.9107 23.3332 17.3334C23.3332 15.4051 22.164 13.7514 20.4974 13.0398C19.9271 10.9054 17.981 9.33337 15.6665 9.33337C12.9051 9.33337 10.6665 11.572 10.6665 14.3334C10.6665 14.4002 10.6678 14.4668 10.6704 14.5331C9.47349 15.2236 8.6665 16.517 8.6665 18C8.6665 20.2092 10.4574 22 12.6665 22C13.0347 22 13.3332 21.7016 13.3332 21.3334C13.3332 20.9652 13.0347 20.6667 12.6665 20.6667C11.1937 20.6667 9.99984 19.4728 9.99984 18C9.99984 16.8951 10.672 15.9457 11.6323 15.5412C11.9102 15.4241 12.0749 15.1351 12.034 14.8363C12.0115 14.6722 11.9998 14.5043 11.9998 14.3334Z"
+                                  fill="#475367"></path>
+                            <path d="M15.5569 17.5018C15.8095 17.2772 16.1902 17.2772 16.4427 17.5018L17.4427 18.3907C17.7179 18.6353 17.7427 19.0567 17.4981 19.3318C17.2841 19.5726 16.9348 19.6217 16.6665 19.4664V22.6667C16.6665 23.0349 16.368 23.3334 15.9998 23.3334C15.6316 23.3334 15.3332 23.0349 15.3332 22.6667V19.4664C15.0648 19.6217 14.7156 19.5726 14.5016 19.3318C14.257 19.0567 14.2817 18.6353 14.5569 18.3907L15.5569 17.5018Z"
+                                  fill="#475367"></path>
+                        </svg>
 
-                    <div class="lower-edge">
-                        <div class="upload-instructions">
-                            <button type="button" id="fileButton" class="upload-button outlined large">
-                                Click to
-                                upload
-                                file
-                            </button>
+                        <div class="lower-edge">
+                            <div class="upload-instructions">
+                                <button type="button" @onclick="TriggerFileInput" class="upload-button outlined large">
+                                    Click to upload file
+                                </button>
+                            </div>
+
+                            <p class="file-requirements">
+                                Maximum File Size: 15mb | Allowed File Types:pdf, docx, pptx, txt
+                            </p>
                         </div>
-
-                        <p class="file-requirements">
-                            Maximum File Size: 15mb | Allowed File Types:pdf, docx, pptx
-                        </p>
                     </div>
                 </div>
+                
 
-            </div>
-            @RenderQuestionSettings() 
-            <button class="btn">Generate Questions</button>
+                @RenderQuestionSettings()
+                <button class="btn" type="submit">Generate Questions</button>
+            </EditForm> 
         </div>
        
         
@@ -89,7 +82,7 @@
         <div class="form-container">
             <h5>Upload a Picture to Generate Questions</h5>
             <div class="form-group mb-3">
-                <input type="file" id="picture-file" class="form-control" accept="image/*">
+                <input type="file" id="picture-file" class="form-control" accept="image/*" hidden>
                 
 
                 <div class="upload-area">
@@ -123,14 +116,14 @@
 </div>
 
 @code {
-    private TextModel textRequest;
-    private AssessmentResponse assessmentViewModel;
-    private AssessmentService AssessmentService { get; set; }
-    private AuthenticationState _authState;
+    private TextModel textRequest = default!;
+    private AssessmentResponse? assessmentViewModel = default!;
+    [Inject] AssessmentService AssessmentService { get; set; } = default!;
+    private AuthenticationState _authState = default!;
     private string activeTab = "Text";
     Choice Choice = new Choice();
 
-    private string userRole;
+    private string userRole = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -212,7 +205,8 @@
     {
         <p>Error: Choice is not initialized</p>
     }
-    </div>;
+    </div>
+    ;
 
 
 
@@ -243,8 +237,119 @@
         }
 
         AssessmentService.Assessment = assessmentViewModel;
-        navigationManager.NavigateTo("/AssessmentQuestion");
+        navigationManager.NavigateTo("/AssessmentQuestions");
     }
 
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        using var stream = file.OpenReadStream(maxAllowedSize: 15728640);
+        using var reader = new StreamReader(stream);
+        var content = await reader.ReadToEndAsync();
+
+        textRequest.Content = content;
+        // await _jsRuntime.InvokeVoidAsync("console.log", content);
+        
+    }
+
+        
+    private async Task GenerateQuestions()
+    {
+        var choice = new Choice
+        {
+            NumberOfQuestion = textRequest.Choice.NumberOfQuestion,
+            Type = textRequest.Choice.Type
+        };
+
+        var loader = new TextModel
+        {
+            Content = textRequest.Content,
+            Title = textRequest.Title,
+            Choice = choice
+        };
+
+        // assessmentViewModel = await _assessment.TextGeneratedQuestion(loader);
+        assessmentViewModel = await _assessment.TextGeneratedQuestion(textRequest);
+    }
+
+
+    private async Task TriggerFileInput()
+    {
+        await _jsRuntime.InvokeVoidAsync("triggerFileInput", "fileInput");
+    }
+    
+
+    
+
+    // async Task SubmitText()
+        // {
+        //     try
+        //     {
+        //         // Mock assessment data
+        //         assessmentViewModel = new AssessmentResponse
+        //             {
+        //                 AssessmentId = Guid.NewGuid(),
+        //                 QuestionType = QuestionType.MultipleChoice,
+        //                 Date = DateTime.Now,
+        //                 Question = new List<QuestionModel>
+        //         {
+        //             new QuestionModel
+        //             {
+        //                 QuestionId = Guid.NewGuid(),
+        //                 QuestionText = "What is the capital of France?",
+        //                 Options = new List<OptionModel>
+        //                 {
+        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Berlin" },
+        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Madrid" },
+        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Paris" }, // Correct answer
+        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Rome" }
+        //                 }
+        //             },
+        //             new QuestionModel
+        //             {
+        //                 QuestionId = Guid.NewGuid(),
+        //                 QuestionText = "What is the largest planet in our solar system?",
+        //                 Options = new List<OptionModel>
+        //                 {
+        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Earth" },
+        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Jupiter" }, // Correct answer
+        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Mars" },
+        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Venus" }
+        //                 }
+        //             },
+        //             new QuestionModel
+        //             {
+        //                 QuestionId = Guid.NewGuid(),
+        //                 QuestionText = "Which element has the chemical symbol 'O'?",
+        //                 Options = new List<OptionModel>
+        //                 {
+        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Oxygen" }, // Correct answer
+        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Osmium" },
+        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Oxide" },
+        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Oganesson" }
+        //                 }
+        //             }
+        //         }
+        //             };
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         Console.WriteLine($"Error during API call: {ex.Message}");
+        //     }
+
+        //     AssessmentService.Assessment = assessmentViewModel;
+
+        //     // Navigate to the AssessmentQuestions page
+        //     navigationManager.NavigateTo("/AssessmentQuestions");
+        // // }
+
+    private void ShowSuccessToast()
+    {
+        toastService.ShowSuccess("Success! Your operation was completed.");
+    }
+
+    private void ShowErrorToast()
+    {
+        toastService.ShowError("Oops! Something went wrong.");
+    }
 } 
-  
