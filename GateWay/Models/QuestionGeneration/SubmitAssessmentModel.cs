@@ -11,7 +11,7 @@ namespace Gateway.ClientAI.Models.QuestionGeneration
     {
         public class SubmitAssessmentRequest
         {
-            public Dictionary<Guid, Guid> Answer { get; set; } 
+            public Dictionary<Guid, string> Answer { get; set; } 
             public Guid AssesmentId { get; set; }
         }
 
@@ -31,6 +31,7 @@ namespace Gateway.ClientAI.Models.QuestionGeneration
 
         public record class AssessmentResultResponseModel
         {
+            public Guid AssesmentId { get; set; }
             public double Score { get; set; }
             public ICollection<QuestionResponseView> Questions { get; set; }
         }

@@ -9,6 +9,7 @@ namespace Gateway.ClientAI.Models.QuestionGeneration
         {
             [Required(ErrorMessage = "Title content is required.")]
             public string Title { get; set; }
+            [Required]
             public string Content { get; set; }
             public Choice Choice { get; set; }
         }
