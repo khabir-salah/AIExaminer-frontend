@@ -1,9 +1,19 @@
-﻿@using Blazored.Toast
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
+@using BootstrapBlazor
 
 
 <div class="page" >
     <div class="sidebar" >
+
+        <div class="top-row ps-3 navbar navbar-dark" >
+            <div class="container-fluid">
+                <a class="navbar-brand">AI.Quiz</a>
+                <button title="Navigation menu" class="navbar-toggler">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+        </div>
+
         <div >
             <nav class="flex-column">
                 <div class="nav-item px-3">
@@ -17,19 +27,55 @@
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="/Subscribe">
+                    <NavLink class="nav-link" href="/SubscriptionPlan">
                         <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Subscribe
                     </NavLink>
                 </div>
+
             </nav>
+
+    
         </div>
     </div>
-
+    <Preload LoadingText="Loading..." />
+   
     <main >
         <article class="content px-4">
+            <Toast />
             @Body
         </article>
     </main>
 </div>
+<BlazoredToast ToastId="@toastId" Settings="@toastSettings" />
 
-<BlazoredToast />
+@code {
+    private Guid toastId = Guid.NewGuid();
+    private Blazored.Toast.Configuration.ToastSettings toastSettings;
+    // [Inject] protected ToastService ToastService { get; set; } = default!;
+
+
+    protected override void OnInitialized()
+    {
+        toastSettings = new Blazored.Toast.Configuration.ToastSettings(
+        additionalClasses: string.Empty,
+        iconType: null,
+        icon: "fas fa-info-circle",
+        showProgressBar: false,
+        showCloseButton: false,
+        onClick: () => { },
+        timeout: 3000,
+        disableTimeout: false,
+        pauseProgressOnHover: false,
+        extendedTimeout: 0,
+        toastPosition: Blazored.Toast.Configuration.ToastPosition.TopLeft
+
+        );
+
+    }
+}
+
+
+
+
+
+

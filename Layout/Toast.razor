@@ -1,0 +1,56 @@
+﻿@using AI.Client.GateWay.Services
+@inject ToastService ToastService
+
+<div class="toast-container" style="@toastContainerStyle">
+    @if (isVisible)
+    {
+        <div class="toast @toastClass">
+            <span>@message</span>
+        </div>
+    }
+</div>
+
+
+@code {
+    private bool isVisible;
+    private string message = string.Empty;
+    private string toastClass = string.Empty;
+    private string toastContainerStyle = "position: fixed; bottom: 20px; right: 20px; z-index: 1000;";
+
+    protected override void OnInitialized()
+    {
+        ToastService.OnShow += ShowToast;
+        ToastService.OnHide += HideToast;
+    }
+
+    private void ShowToast(string message, ToastType type)
+    {
+        this.message = message;
+        this.toastClass = type switch
+        {
+            ToastType.Success => "toast-success",
+            ToastType.Error => "toast-error",   
+            ToastType.Warning => "toast-warning",
+            ToastType.Info => "toast-info",
+            _ => "toast-info"
+        };
+        isVisible = true;
+
+        // Automatically hide the toast after 3 seconds
+        // Task.Delay(3000).ContinueWith(_ => HideToast());
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void HideToast()
+    {
+        isVisible = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ToastService.OnShow -= ShowToast;
+        ToastService.OnHide -= HideToast;
+    }
+}
+
