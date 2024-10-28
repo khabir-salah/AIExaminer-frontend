@@ -12,7 +12,7 @@ namespace Gateway.Services.Authentication
         Task ResetPassword(ResetPasswordRequest request);
         Task ForgotPassword(ForgotPasswordRequest request);
         Task LogOut();
-
+        Task Google();
         Task ConfirmEmail(ViewRegisterModel registerRequest);
         Task<CurrentUser> CurrentUserInfo();
     }

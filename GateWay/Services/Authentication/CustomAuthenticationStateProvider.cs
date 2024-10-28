@@ -67,6 +67,12 @@ namespace Gateway.ClientAI.Services.Authentication
             await _api.Register(registerParameters);
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
+
+        public async Task Google()
+        {
+            await _api.Google();
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        }
     }
 
     public static class Auth

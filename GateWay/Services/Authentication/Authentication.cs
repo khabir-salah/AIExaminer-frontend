@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using static Gateway.ClientAI.Models.Authentication.ResetModel;
 using Microsoft.JSInterop;
 using System.Net.Http.Headers;
+using Gateway.ClientAI.Services.QuestionGeneration;
 
 
 namespace Gateway.Services.Authentication
@@ -31,9 +32,28 @@ namespace Gateway.Services.Authentication
             }
         }
 
+        public async Task Google()
+        {
+            var result = await _httpClient.GetAsync("api/account/Google-sign");
+            if (result.StatusCode == System.Net.HttpStatusCode.BadRequest) throw new Exception(await result.Content.ReadAsStringAsync());
+            result.EnsureSuccessStatusCode();
+            //var responseContent = await result.Content.ReadFromJsonAsync<TokenResponse>();
+
+            //if (responseContent != null && !string.IsNullOrEmpty(responseContent.Token))
+            //{
+            //    await _jsRuntime.InvokeVoidAsync("sessionStorage.setItem", "authToken", responseContent.Token);
+            //}
+        }
+
+
         public async Task LogOut()
         {
             
+        }
+
+        public async Task GoogleSignUp()
+        {
+            var loader = await _httpClient.GetAsync(UrlRoute.TextDetails);
         }
 
         public async Task ConfirmEmail(ViewRegisterModel registerRequest)
