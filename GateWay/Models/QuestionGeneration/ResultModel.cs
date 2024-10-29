@@ -6,7 +6,7 @@ namespace Gateway.ClientAI.Models.QuestionGeneration
     {
         public class ResultViewModel
         {
-            public AssessmentResultResponseModel AssessmentResult { get; set; }
+            public AssessmentResultResponseModel AssessmentResult { get; set; } = default!;
         }
     }
 }
