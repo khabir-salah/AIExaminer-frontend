@@ -6,10 +6,21 @@
 
 
 
-<h3>Assessment Questions</h3>
-
 <div class="assessment-container">
-    @if (AssessmentService.Assessment != null)
+    <h3>Assessment Questions</h3>
+    <hr />
+    @if (isLoading)
+    {
+        <div class="loading-overlay">
+            <div class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h3 class="loading-text">Please wait while we load the questions...</h3>
+            </div>
+        </div>
+    }
+    else if (AssessmentService.Assessment != null)
     {
         <EditForm Model="answers" OnValidSubmit="SubmitAnswers">
             @foreach (var question in AssessmentService.Assessment.Question)
@@ -37,7 +48,7 @@
                 </div>
             }
 
-            <button type="submit" class="btn">Submit</button>
+            <button type="submit" style="width:100%" class="btn">Submit</button>
         </EditForm>
     }
     else
@@ -50,8 +61,8 @@
     // private AssessmentResponse assessmentResponse;
     private Dictionary<Guid, string> answers = new();
     [Inject] ResultViewModel Result { get; set; } = default!;
-    private AssessmentResultResponseModel Assessment;
-    [Inject] AssessmentService AssessmentService { get; set; }
+    private AssessmentResultResponseModel? Assessment = default!;
+    [Inject]AssessmentService AssessmentService { get; set; } = default!;
 
 
     private void OnOptionSelected(Guid questionId, string selectedOptionText)
@@ -76,6 +87,22 @@
         Assessment = await _assessment.Submit(request);
         Result.AssessmentResult = Assessment;
         navigationManager.NavigateTo("/AssessmentResult");
+    }
+
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(2000);
+
+        if (AssessmentService.Assessment != null)
+        {
+            isLoading = false;
+        }
+        else
+        {
+            isLoading = false;
+        }
     }
 
 }
