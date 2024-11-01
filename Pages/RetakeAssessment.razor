@@ -1,13 +1,25 @@
-﻿@page "/RetakeAssessment/{AssessmentId:Guid}"
+﻿@page "/RetakeAssessment/{AssessmentId:guid}"
 @layout UserLayout
 
 
 
 
-<h3>Assessment Questions</h3>
 
 <div class="assessment-container">
-    @if (Assessment != null)
+    <h3>Assessment Questions</h3>
+
+    @if (isLoading)
+    {
+        <div class="loading-overlay">
+            <div class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h3 class="loading-text">Please wait while we Load the questions...</h3>
+            </div>
+        </div>
+    }
+    else if (Assessment != null)
     {
         <EditForm Model="answers" OnValidSubmit="SubmitAnswers">
             @foreach (var question in Assessment.Question)
@@ -35,7 +47,7 @@
                 </div>
             }
 
-            <button type="submit" class="btn">Submit</button>
+            <button type="submit" style="width:100%" class="btn ">Submit</button>
         </EditForm>
     }
     else
@@ -52,13 +64,23 @@
     public Guid AssessmentId { get; set; } = default!;
     private Dictionary<Guid, string> answers = new();
     [Inject] ResultViewModel Result { get; set; } = default!;
+    private bool isLoading = true;
 
-    private AssessmentResultResponseModel AssessmentResult = default!;
-    private TetakeAssessmentViewModel Assessment = default!;
+    private AssessmentResultResponseModel? AssessmentResult = default!;
+    private TetakeAssessmentViewModel? Assessment = default!;
 
     protected override async Task OnInitializedAsync()
     {
         Assessment = await _assessment.RetakeAssessment(AssessmentId);
+        await Task.Delay(2000);
+        if (Assessment != null)
+        {
+            isLoading = false;
+        }
+        else
+        {
+            isLoading = false;
+        }
     }
 
     private void OnOptionSelected(Guid questionId, string selectedOptionText)
