@@ -1,0 +1,83 @@
+﻿@page "/SubscriptionPlan"
+@layout UserLayout
+
+
+<div class="subscription-container">
+    <h2>Choose Your Subscription Plan</h2>
+    <div class="subscription-cards">
+
+        <!-- Basic Plan -->
+        <div class="card basic-plan">
+            <h3>Basic Plan</h3>
+            <p>Free Plan: Limited features</p>
+            <ul>
+                <li><i class="fas fa-check-circle"></i> 3 Text Questions per day</li>
+                <li><i class="fas fa-times-circle"></i> No document  Question</li>
+                <li><i class="fas fa-times-circle"></i> No Picture  Question</li>
+                <li><i class="fas fa-check-circle"></i> 10 max Number of Questions per request </li>
+            </ul>
+            <button disabled>Current Plan</button>
+        </div>
+
+        <!-- Classic Plan -->
+        <div class="card classic-plan">
+            <h3>Classic Plan - ₦5000 / 3 Months</h3>
+
+            <ul>
+                <li><i class="fas fa-check-circle"></i> 5 Text Questions per day</li>
+                <li><i class="fas fa-check-circle"></i> 3 Document Questions per day</li>
+                <li><i class="fas fa-times-circle"></i> No Picture Questions</li>
+                <li><i class="fas fa-check-circle"></i> 15 max Number of Questions per request </li>
+            </ul>
+            <button @onclick="SubscribeClassic">Subscribe Now</button>
+        </div>
+
+        <!-- Standard Plan -->
+        <div class="card standard-plan">
+            <h3>Standard Plan - ₦7500 / 6 Months</h3>
+            <ul>
+                <li><i class="fas fa-check-circle"></i> 10 Text Questions per day</li>
+                <li><i class="fas fa-check-circle"></i> 5 Document Questions per day</li>
+                <li><i class="fas fa-check-circle"></i> 5 Picture Questions</li>
+                <li><i class="fas fa-check-circle"></i> 20 max Number of Questions per request </li>
+            </ul>
+            <button @onclick="SubscribeStandard">Subscribe Now</button>
+        </div>
+
+       
+
+    </div>
+</div>
+
+
+@code {
+
+    private async Task SubscribeClassic()
+    {
+        await Subscribe("classic");
+    }
+
+    private async Task SubscribeStandard()
+    {
+        await Subscribe("standard");
+    }
+
+
+    private async Task Subscribe(string planType)
+    {
+
+        var paystackResponse = await _assessment.Subscribe(planType);
+
+        if (paystackResponse != null && paystackResponse.Status)
+        {
+            var paymentUrl = paystackResponse.Data.AuthorizationUrl;
+
+            // Redirect to Paystack's payment page
+            navigationManager.NavigateTo(paymentUrl, forceLoad: true);  
+        }
+        else
+        {
+            throw new Exception("An error Occured");
+        }
+    }
+}
