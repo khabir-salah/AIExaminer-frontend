@@ -4,14 +4,13 @@
     @using Gateway.ClientAI.Services.Authentication
     @using Gateway.Services.Authentication
 
-    
 
 
 
-   
+
 
     <div class="pattern">
-
+    <Toasts class="p-3" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
         @if (showError)
         {
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -19,6 +18,7 @@
                 <button type="button" class="btn-close" @onclick="CloseAlert" aria-label="Close"></button>
             </div>
         }
+       
 
         <div class="container">
             <div class="tab-buttons">
@@ -34,7 +34,7 @@
                         <button type="button" class="btn btn-link btn-floating mx-1">
                             <i class="fab fa-facebook-f"></i>
                         </button>
-                        <button type="button" class="btn btn-link btn-floating mx-1">
+                        <button type="button" class="btn btn-link btn-floating mx-1" @onclick="Google">
                             <i class="fab fa-google"></i>
                         </button>
                         <button type="button" class="btn btn-link btn-floating mx-1">
@@ -66,7 +66,7 @@
                         <button type="button" class="btn btn-link btn-floating mx-1">
                             <i class="fab fa-facebook-f"></i>
                         </button>
-                        <button type="button" class="btn btn-link btn-floating mx-1">
+                        <button type="button" class="btn btn-link btn-floating mx-1" @onclick="Google">
                             <i class="fab fa-google"></i>
                         </button>
                         <button type="button" class="btn btn-link btn-floating mx-1">
@@ -115,6 +115,8 @@
         private bool isLoginActive = true;
         bool showError = false;
 
+
+
         async Task OnSubmit()
         {
             error = string.Empty;
@@ -154,12 +156,21 @@
         private void ShowRegister()
         {
             isLoginActive = false;
+            // ToastService.ShowSuccess("testtthhhhhh");
         }
 
         private void CloseAlert()
         {
             showError = false;
         }
+
+
+        async Task Google()
+        {
+            await AuthenticationStateProvider.Google();
+            navigationManager.NavigateTo("/UserDashboard");
+        }
+       
     }
 
 </body>
