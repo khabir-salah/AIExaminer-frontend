@@ -1,16 +1,21 @@
 ﻿@page "/TextAssessmentDetails"
 @layout UserLayout
-@using Gateway.ClientAI.Models.QuestionGeneration
-@inject NavigationManager navigationManager
-@inject IJSRuntime jsRuntime
-@inject Blazored.Toast.Services.IToastService toastService
-@inject IAssessment _assessment
-@using Gateway.ClientAI.Services.QuestionGeneration
 
 
 <h3>Your Assessments</h3>
-
-@if (assessmentDetails != null && assessmentDetails.Count > 0)
+<hr />
+@if (isLoading)
+{
+    <div class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h3 class="loading-text">Please wait while we Load your Assessment...</h3>
+        </div>
+    </div>
+}
+else if (assessmentDetails != null && assessmentDetails.Count > 0)
 {
     <div class="table-responsive">
         <table class="table table-striped table-bordered">
@@ -33,6 +38,11 @@
                                 Copy Link
                             </button>
                         </td>
+
+                            <div class="copy-toast alert alert-success" style="position: fixed; bottom: 10px; right: 10px; display: @(showCopyToast ? "block" : "none");" >
+                                Link Copied!
+                            </div>
+
                         <td>
                             <button class="btn btn-primary btn-sm" @onclick="() => RetakeAssessment(assessment.Id)">
                                 Retake Assessment
@@ -52,23 +62,46 @@ else
     <p>No assessments available.</p>
 }
 
+
+
 @code {
-    private ICollection<TextAssessmebtDetails> assessmentDetails;
+    private ICollection<TextAssessmebtDetails?> assessmentDetails ;
+
+    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
         assessmentDetails = await _assessment.TextAssessmentDetails();
+        await Task.Delay(60);
+        if (assessmentDetails != null)
+        {
+            isLoading = false;
+        }
+        else
+        {
+            isLoading = false;
+        }
     }
 
+    private bool showCopyToast = false;
     private async Task CopyLinkToClipboard(string link)
     {
-        await jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", link);
-        toastService.ShowSuccess("Link copied to clipboard!");
+        await _jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", link);
+
+        // Show the "Link Copied" notification
+        showCopyToast = true;
+
+        // Hide the toast after 2 seconds
+        await Task.Delay(2000);
+        showCopyToast = false;
+
+        // Trigger UI update
+        StateHasChanged();
     }
+
 
     private void RetakeAssessment(Guid AssessmentId)
     {
-        // Navigate to the assessment link for retaking
         navigationManager.NavigateTo($"RetakeAssessment/{AssessmentId}");
     }
 
