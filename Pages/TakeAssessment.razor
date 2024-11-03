@@ -1,0 +1,141 @@
+﻿@page "/TakeAssessment/{AssessmentId:guid}"
+
+
+
+
+
+
+
+<!-- Navbar for non-registered users -->
+<nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">AI.Quiz</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/about">About</a>
+                </li>
+            </ul>
+            <div class="d-flex">
+                <a class="btn btn-custom me-2" href="/register">Create an Account Now</a>
+                <a class="btn btn-outline-light" href="/login">Login</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main content of the page -->
+<div class="content">
+    <div class="assessment-container">
+        <h3>Assessment Questions</h3>
+
+        @if (isLoading)
+        {
+            <div class="loading-overlay">
+                <div class="loading-spinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h3 class="loading-text">Please wait while we Load the questions...</h3>
+                </div>
+            </div>
+        }
+        else if (Assessment != null)
+        {
+            <EditForm Model="answers" OnValidSubmit="SubmitAnswers">
+                @foreach (var question in Assessment.Question)
+                {
+                    <div class="question-wrapper mb-4">
+                        <h5>@question.QuestionText</h5>
+
+                        <div class="options-wrapper">
+                            @foreach (var option in question.Options)
+                            {
+
+                                <div class="form-check">
+                                    <input type="radio" id="@GetOptionId(question.QuestionId, option.OptionId)"
+                                           name="@question.QuestionId.ToString()"
+                                           value="@option.Text"
+                                           @onchange="(e) => OnOptionSelected(question.QuestionId, option.Text)"
+                                           class="form-check-input" />
+
+                                    <label class="form-check-label" for="@GetOptionId(question.QuestionId, option.OptionId)">
+                                        @option.Text
+                                    </label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <button type="submit" style="width:100%" class="btn">Submit</button>
+            </EditForm>
+        }
+        else
+        {
+            <p>Loading questions...</p>
+        }
+    </div>
+</div>
+
+
+
+
+
+
+
+@code{
+    [Parameter]
+    public Guid AssessmentId { get; set; } = default!;
+    private Dictionary<Guid, string> answers = new();
+    [Inject] ResultViewModel Result { get; set; } = default!;
+    private bool isLoading = true;
+
+    private AssessmentResultResponseModel? AssessmentResult = default!;
+    private TetakeAssessmentViewModel? Assessment = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Assessment = await _assessment.TakeAssessment(AssessmentId);
+        await Task.Delay(2000);
+        if (Assessment != null)
+        {
+            isLoading = false;
+        }
+        else
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OnOptionSelected(Guid questionId, string selectedOptionText)
+    {
+        // Update the selected option for the question in the answers dictionary
+        answers[questionId] = selectedOptionText;
+    }
+
+    private string GetOptionId(Guid questionId, Guid optionId)
+    {
+        return $"{questionId}-{optionId}";
+    }
+
+    private async Task SubmitAnswers()
+    {
+        var request = new SubmitAssessmentRequest
+        {
+            Answer = answers,
+            AssesmentId = Assessment.AssessmentId
+        };
+
+        AssessmentResult = await _assessment.SubmitResult(request);
+        Result.AssessmentResult = AssessmentResult;
+        navigationManager.NavigateTo("/Result");
+    }
+
+}
