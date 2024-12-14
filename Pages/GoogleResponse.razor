@@ -1,0 +1,29 @@
+﻿@page "/google-response"
+
+<h3>Redirecting...</h3>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the current URI
+        var uri = new Uri(navigationManager.Uri);
+
+        // Parse the query string to extract the token
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var token = query["token"]; // Fetch the 'token' query parameter
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            // Save the token in session storage
+            await _jsRuntime.InvokeVoidAsync("sessionStorage.setItem", "authToken", token);
+
+            // Redirect to the UserDashboard page
+            navigationManager.NavigateTo("/UserDashboard");
+        }
+        else
+        {
+            // If token is missing, redirect to home/login page
+            navigationManager.NavigateTo("/");
+        }
+    }
+}

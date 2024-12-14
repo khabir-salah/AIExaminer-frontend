@@ -10,21 +10,39 @@
     width: 100%; /* Make sure the wrapper also takes full width */
 }
 
+.container{
+    display:flex;
+    flex-direction: column;
+    justify-content : center;
+    align-items: center;
+}
+
 
 .form-container {
     display: flex;
     flex-direction: column;
     gap: 28px;
     margin: 0 auto;
-    width: 100%;
+    width: 80%;
     max-width: 650px;
-    padding-top: 8px;
-    padding-bottom: 40px;
     align-content: center;
     padding: 8px 0x 40px;
 }
 
-.card.p-3.form-container {
+/*.card {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 800px;
+    padding-top: 8px;
+    padding-bottom: 40px;
+    align-content: center;
+    padding: 8px 0x 40px; 
+}*/
+
+/*.card.p-3.form-container {
     display: flex;
     flex-direction: column;
     gap: 28px;
@@ -35,7 +53,7 @@
     padding-bottom: 40px;
     align-content: center;
     padding: 8px 0x 40px;
-}
+}*/
 
 .form-input {
     display: flex;

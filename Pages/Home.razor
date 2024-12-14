@@ -167,8 +167,7 @@
 
         async Task Google()
         {
-            await AuthenticationStateProvider.Google();
-            navigationManager.NavigateTo("/UserDashboard");
+            navigationManager.NavigateTo("https://localhost:7063/api/account/Google-sign");
         }
        
     }

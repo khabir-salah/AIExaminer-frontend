@@ -1,5 +1,5 @@
 ﻿@page "/payment/callback"
-@using Microsoft.AspNetCore.WebUtilities
+@* @using Microsoft.AspNetCore.WebUtilities *@
 
 <div class="loading-overlay">
     <div class="loading-spinner">
@@ -18,16 +18,16 @@
         await Task.Delay(2000);
 
         var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
-        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("reference", out var reference))
-        {
-            // Call the payment verification method
-            await HandlePaymentCallback(reference);
-        }
-        else
-        {
-            // No reference in the URL, redirect to payment failure or homepage
-            navigationManager.NavigateTo("/payment/failure", forceLoad: true);
-        }
+        // if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("reference", out var reference))
+        // {
+        //     // Call the payment verification method
+        //     await HandlePaymentCallback(reference);
+        // }
+        // else
+        // {
+        //     // No reference in the URL, redirect to payment failure or homepage
+        //     navigationManager.NavigateTo("/payment/failure", forceLoad: true);
+        // }
     }
 
     private async Task HandlePaymentCallback(string reference)

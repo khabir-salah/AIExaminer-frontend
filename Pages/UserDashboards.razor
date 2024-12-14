@@ -1,6 +1,6 @@
 ﻿@page "/UserDashboard"
 @layout UserLayout  
-@inject IToastService toastService
+
 
 
 
@@ -16,9 +16,9 @@
 
     @if (activeTab == "Text")
     {
-        <EditForm Model="@textRequest" OnValidSubmit="SubmitText">
-            <DataAnnotationsValidator />
-            <div class="card p-3 form-container">
+       <div class=" form-container">
+            <EditForm Model="@textRequest" OnValidSubmit="SubmitText">
+                <DataAnnotationsValidator />
                 <div class="form-group">
                     <label for="titleInput"><b>Title</b></label>
                     <input type="text" id="titleInput" class="form-control" placeholder="Give your Text A Title" @bind="@textRequest.Title" />
@@ -26,12 +26,12 @@
                 </div>
                 <div class="form-group ">
                     <b><label for="typed-text">Text Input</label></b>
-                    <textarea id="typed-text" class="form-control" rows="8" placeholder="Enter the text here" @bind="@textRequest.Content"></textarea>
+                    <textarea id="typed-text" class="form-control" rows="8" placeholder="Enter text here" @bind="@textRequest.Content"></textarea>
                 </div>
-                @RenderQuestionSettings() 
-                <button class="btn" type="submit">Generate Questions</button>
-            </div>
-        </EditForm>
+                @RenderQuestionSettings()
+                <button class="btn" style="width:100%" type="submit">Generate Questions</button>
+            </EditForm>
+       </div>
     }
     else if (activeTab == "Document")
     {
@@ -71,7 +71,15 @@
                 
 
                 @RenderQuestionSettings()
-                <button class="btn" type="submit">Generate Questions</button>
+
+                @if (userRole == "Basic")
+                {
+                    <button class="btn" style="width:100%" type="button" @onclick="RedirectToSubscription">Subscribe To Generate</button>
+                }
+                else
+                {
+                    <button class="btn" style="width:100%" type="submit">Generate Questions</button>
+                }
             </EditForm> 
         </div>
        
@@ -80,7 +88,7 @@
     else if (activeTab == "Picture")
     {
         <div class="form-container">
-            <h5>Upload a Picture to Generate Questions</h5>
+            <b><h5>Upload a Picture to Generate Questions</h5></b>
             <div class="form-group mb-3">
                 <input type="file" id="picture-file" class="form-control" accept="image/*" hidden>
                 
@@ -110,12 +118,20 @@
 
             </div>
             @RenderQuestionSettings()
-            <button class="btn">Generate Questions</button>
+
+            @if (userRole == "Basic" || userRole == "Classic")
+            {
+                <button class="btn" type="button" @onclick="RedirectToSubscription">Subscribe To Generate</button>
+            }
+            else{
+            <button class="btn" type="submit">Generate Questions</button>
+            }
         </div>
     }
 </div>
 
 @code {
+
     private TextModel textRequest = default!;
     private AssessmentResponse? assessmentViewModel = default!;
     [Inject] AssessmentService AssessmentService { get; set; } = default!;
@@ -124,6 +140,16 @@
     Choice Choice = new Choice();
 
     private string userRole = default!;
+
+    private void ShowSuccessToast()
+    {
+        ToastService.ShowToast("This is a success message!", ToastType.Success);
+    }
+
+    private void RedirectToSubscription()
+    {
+        navigationManager.NavigateTo("/SubscriptionPlan");
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -173,11 +199,13 @@
             </label>
             <div class="custom-select-wrapper">
                 <select id="question-count" class="form-control" @bind="@textRequest.Choice.NumberOfQuestion">
+                    <option >Select Number of questions</option>
+
                     @if (userRole == "Basic")
                 {
                     <option value="5">5</option>
                     <option value="10">10</option>
-                    <option value="0">Subscribe to get more options</option>
+                    <option>Subscribe to get more options</option>
                 }
                 else if (userRole == "Classic")
                 {
@@ -229,6 +257,41 @@
     {
         try
         {
+            textRequest.Content = @"
+Explanation in Science
+Explanation in science is a fundamental aspect of the scientific process. It involves providing understanding about natural phenomena through systematic observation, experimentation, and reasoning. Scientific explanations are designed to clarify why certain events occur, how systems function, and what underlying principles govern these processes. Here is a detailed examination of the key components and points related to scientific explanations:
+
+1. Nature of Scientific Explanation
+	Causal Explanations: These explain phenomena by identifying causes. For example, explaining why an apple falls by referring to the force of gravity.
+	Descriptive Explanations: These involve describing the state of affairs or the sequence of events that lead to a phenomenon. For example, describing the stages of cell division in mitosis.
+	Predictive Explanations: These enable predictions about future events based on current understanding. For instance, predicting weather patterns
+
+'question': 'What is the primary goal of scientific explanation?',
+'options': [A. To describe natural phenomena, B. To provide understanding through systematic observation and reasoning, C. To offer opinions on natural occurrences, D. To predict unknown facts without evidence],
+'answer': 'B. To provide understanding through systematic observation and reasoning',
+'explanation': 'Scientific explanation aims to provide understanding of natural phenomena through observation, experimentation, and reasoning.'
+
+'question': 'Which type of scientific explanation identifies the causes of events?',
+'options': [A. Descriptive Explanations, B. Causal Explanations, C. Predictive Explanations, D. Statistical Explanations],
+'answer': 'B. Causal Explanations',
+'explanation': 'Causal explanations explain phenomena by identifying causes, such as referring to gravity to explain why an apple falls.'
+
+'question': 'What does the Deductive-Nomological (D-N) Model propose?',
+'options': [A. Explanations are based on personal experiences, B. Explanations can be logically derived from general laws and specific conditions, C. Explanations only involve probabilities, D. Explanations depend on future predictions],
+'answer': 'B. Explanations can be logically derived from general laws and specific conditions',
+'explanation': 'The Deductive-Nomological (D-N) Model suggests that explanations can be derived logically from general laws and specific initial conditions.'
+
+'question': 'What kind of explanations involve describing the sequence of events leading to a phenomenon?',
+'options': [A. Predictive Explanations, B. Causal Explanations, C. Descriptive Explanations, D. Deductive-Nomological Explanations],
+'answer': 'C. Descriptive Explanations',
+'explanation': 'Descriptive explanations involve describing the state of affairs or sequence of events leading to a phenomenon, such as the stages of cell division in mitosis.'
+
+'question': 'Which type of explanation uses statistical laws rather than deterministic ones?',
+'options': [A. Deductive-Nomological (D-N) Model, B. Causal Explanations, C. Statistical Explanations, D. Predictive Explanations],
+'answer': 'C. Statistical Explanations',
+'explanation': 'Statistical explanations involve statistical laws rather than deterministic ones, such as explaining genetic trait likelihood using probabilities.'
+";
+
             assessmentViewModel = await _assessment.TextGeneratedQuestion(textRequest);
         }
         catch (Exception ex)
@@ -236,8 +299,11 @@
             Console.WriteLine($"Error during API call: {ex.Message}");
         }
 
-        AssessmentService.Assessment = assessmentViewModel;
-        navigationManager.NavigateTo("/AssessmentQuestions");
+        if (assessmentViewModel != null)
+        {
+            AssessmentService.Assessment = assessmentViewModel;
+            navigationManager.NavigateTo("/AssessmentQuestions");
+        }
     }
 
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
@@ -247,29 +313,55 @@
         using var reader = new StreamReader(stream);
         var content = await reader.ReadToEndAsync();
 
-        textRequest.Content = content;
+        // textRequest.Content = content;
         // await _jsRuntime.InvokeVoidAsync("console.log", content);
-        
+
+        textRequest.Content = @"
+'question': 'What programming languages did the applicant mention having experience in?',
+'options': [A. C++ Java and Python, B. C# .NET and MVC, C. HTML CSS and JavaScript, D. PHP Ruby and Perl],
+'answer': 'B. C# .NET and MVC',
+'explanation': 'In the document, the applicant specifically mentions having skills in C#, .NET, and MVC architecture.'
+
+'question': 'Where did the applicant obtain their Bsc degree?',
+'options': [A. University of Lagos, B. University of Ibadan, C. University of Calabar, D. University of Nigeria],
+'answer': 'C. University of Calabar',
+'explanation': 'The applicant obtained a Bsc degree in Mathematics and Statistics from the University of Calabar, Nigeria.'
+
+'question': 'What company did the applicant work for as a Back End Developer?',
+'options': [A. CodeLeanersHub, B. Sysbeams, C. Microsoft, D. Google],
+'answer': 'B. Sysbeams',
+'explanation': 'The applicant worked as a Back End Developer at Sysbeams, where they designed and implemented the Survey Integration.'
+
+'question': 'Which project did the applicant work on at CodeLeanersHub?',
+'options': [A. Survey Integration, B. E-Commerce Platform, C. SurveyFeedback Solution, D. Online Banking System],
+'answer': 'C. SurveyFeedback Solution',
+'explanation': 'At CodeLeanersHub, the applicant developed the SurveyFeedback Solution, an online application that improved user interaction and data insights.'
+
+'question': 'What type of development practices is the applicant experienced in?',
+'options': [A. Waterfall, B. Agile, C. DevOps, D. Lean],
+'answer': 'B. Agile',
+'explanation': 'The applicant has experience with agile development practices, including sprint planning and daily stand-ups.'
+";
+
+
     }
 
-        
+
     private async Task GenerateQuestions()
     {
-        var choice = new Choice
+        try
         {
-            NumberOfQuestion = textRequest.Choice.NumberOfQuestion,
-            Type = textRequest.Choice.Type
-        };
-
-        var loader = new TextModel
+            assessmentViewModel = await _assessment.TextGeneratedQuestion(textRequest);
+        }
+        catch (Exception ex)
         {
-            Content = textRequest.Content,
-            Title = textRequest.Title,
-            Choice = choice
-        };
-
-        // assessmentViewModel = await _assessment.TextGeneratedQuestion(loader);
-        assessmentViewModel = await _assessment.TextGeneratedQuestion(textRequest);
+            Console.WriteLine($"Error during API call: {ex.Message}");
+        }
+        if (assessmentViewModel != null)
+        {
+            AssessmentService.Assessment = assessmentViewModel;
+            navigationManager.NavigateTo("/AssessmentQuestions");
+        }
     }
 
 
@@ -278,78 +370,5 @@
         await _jsRuntime.InvokeVoidAsync("triggerFileInput", "fileInput");
     }
     
-
     
-
-    // async Task SubmitText()
-        // {
-        //     try
-        //     {
-        //         // Mock assessment data
-        //         assessmentViewModel = new AssessmentResponse
-        //             {
-        //                 AssessmentId = Guid.NewGuid(),
-        //                 QuestionType = QuestionType.MultipleChoice,
-        //                 Date = DateTime.Now,
-        //                 Question = new List<QuestionModel>
-        //         {
-        //             new QuestionModel
-        //             {
-        //                 QuestionId = Guid.NewGuid(),
-        //                 QuestionText = "What is the capital of France?",
-        //                 Options = new List<OptionModel>
-        //                 {
-        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Berlin" },
-        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Madrid" },
-        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Paris" }, // Correct answer
-        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Rome" }
-        //                 }
-        //             },
-        //             new QuestionModel
-        //             {
-        //                 QuestionId = Guid.NewGuid(),
-        //                 QuestionText = "What is the largest planet in our solar system?",
-        //                 Options = new List<OptionModel>
-        //                 {
-        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Earth" },
-        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Jupiter" }, // Correct answer
-        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Mars" },
-        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Venus" }
-        //                 }
-        //             },
-        //             new QuestionModel
-        //             {
-        //                 QuestionId = Guid.NewGuid(),
-        //                 QuestionText = "Which element has the chemical symbol 'O'?",
-        //                 Options = new List<OptionModel>
-        //                 {
-        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Oxygen" }, // Correct answer
-        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Osmium" },
-        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Oxide" },
-        //                     new OptionModel { OptionId = Guid.NewGuid(), Text = "Oganesson" }
-        //                 }
-        //             }
-        //         }
-        //             };
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         Console.WriteLine($"Error during API call: {ex.Message}");
-        //     }
-
-        //     AssessmentService.Assessment = assessmentViewModel;
-
-        //     // Navigate to the AssessmentQuestions page
-        //     navigationManager.NavigateTo("/AssessmentQuestions");
-        // // }
-
-    private void ShowSuccessToast()
-    {
-        toastService.ShowSuccess("Success! Your operation was completed.");
-    }
-
-    private void ShowErrorToast()
-    {
-        toastService.ShowError("Oops! Something went wrong.");
-    }
 } 

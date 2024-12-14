@@ -8,3 +8,25 @@
 @using Microsoft.JSInterop
 @using AI.Client
 @using AI.Client.Layout
+@using Gateway.Models.Authentication
+@inject NavigationManager navigationManager
+
+@using Gateway.ClientAI.Models.QuestionGeneration
+@using Gateway.ClientAI.Services.QuestionGeneration
+@using static Gateway.ClientAI.Models.QuestionGeneration.ResultModel
+@using static Gateway.ClientAI.Models.QuestionGeneration.SubmitAssessmentModel
+@using static Gateway.ClientAI.Models.QuestionGeneration.GenerateTextViewModel
+@using static Gateway.ClientAI.Models.QuestionGeneration.QuestionViewModel
+@inject IAssessment _assessment
+
+@using Gateway.ClientAI.Services.Authentication
+
+@using AI.Client.GateWay.Services
+@inject ToastService ToastService
+
+@inject IJSRuntime _jsRuntime
+
+@using Microsoft.AspNetCore.Components.Authorization;
+@using System.Net.Http.Headers
+@inject HttpClient _httpClient
+@inject CustomAuthenticationStateProvider AuthenticationStateProvider
